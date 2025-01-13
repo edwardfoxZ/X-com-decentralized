@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useActiveNavContext } from "../context/ActiveNavContext";
 
 export const Nav = () => {
-  const { activeNav, setActiveNav } = useActiveNavContext();
+  const { activeNav } = useActiveNavContext();
+  const navRef = useRef(null);
 
   return (
     <div
+      ref={navRef}
       className={`relative flex flex-col w-5/12 h-full bg-[#441752] p-5 border-r-2 ${
         activeNav
           ? "-translate-x-[100%] transition-all ease-in-out duration-700 w-0"
