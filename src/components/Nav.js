@@ -6,18 +6,52 @@ export const Nav = () => {
 
   return (
     <div
-      className={`relative flex flex-col w-5/12 h-full bg-[#213555] p-5 border-r-2 transition-transform duration-300 ${
-        activeNav ? "-translate-x-[100%]" : ""
+      className={`relative flex flex-col w-5/12 h-full bg-[#441752] p-5 border-r-2 ${
+        activeNav
+          ? "-translate-x-[100%] transition-all ease-in-out duration-700 w-0"
+          : "transition-all ease-in-out duration-700"
       } overflow-hidden`}
     >
-      <div className="flex flex-col mx-auto text-white">
-        <p className="text-4xl font-bold">Decentralized X</p>
+      <div className="flex flex-col mx-auto text-[#AB4459]">
+        <p
+          className={`text-4xl font-bold ${
+            !activeNav
+              ? "translate-y-3 transition-all duration-500 delay-700 ease-out"
+              : ""
+          }`}
+        >
+          Decentralized X
+        </p>
       </div>
-      <div className="flex flex-col gap-9 px-10 mt-44 text-white text-2xl">
-        <a href="/">Home</a>
-        <a href="/notifications">Notifications</a>
+      <div className="flex flex-col gap-9 px-10 mt-44 text-[#AB4459] text-2xl">
+        <a
+          className={`${
+            !activeNav
+              ? "translate-x-3 transition-all duration-500 delay-700 ease-out"
+              : ""
+          }`}
+          href="/"
+        >
+          Home
+        </a>
+        <a
+          className={`${
+            !activeNav
+              ? "translate-x-3 transition-all duration-500 delay-700 ease-out"
+              : ""
+          }`}
+          href="/notifications"
+        >
+          Notifications
+        </a>
       </div>
-      <div className="absolute flex flex-row items-center gap-3 bottom-12 left-14 text-white text-3xl">
+      <div
+        className={`absolute flex flex-row items-center gap-3 bottom-12 left-14 text-[#AB4459] text-3xl ${
+          !activeNav
+            ? "-translate-y-3 transition-all duration-500 delay-700 ease-out"
+            : ""
+        }`}
+      >
         <div className="w-14">
           <img
             draggable={false}
