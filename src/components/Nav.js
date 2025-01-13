@@ -60,7 +60,7 @@ export const Nav = () => {
             alt="Profile"
           />
         </div>
-        <p>WalletAddress</p>
+        <p>0x0000</p>
       </div>
     </div>
   );

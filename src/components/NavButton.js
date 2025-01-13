@@ -7,7 +7,7 @@ export const NavButton = ({ setActiveNav, activeNav }) => {
         {activeNav ? (
           <button
             onClick={() => setActiveNav(false)}
-            className="bg-slate-50 rounded-full px-3 py-1 pb-2 hover:bg-slate-500 hover:text-white transition-all duration-300"
+            className="bg-slate-50 rounded-full px-3 py-1 pb-2 hover:bg-slate-500 hover:text-white focus:bg-[#F29F58] transition-all duration-300"
           >
             {">"}
           </button>
