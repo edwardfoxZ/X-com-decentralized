@@ -15,9 +15,11 @@ export const Page = ({
   const [likedTweets, setLikedTweets] = useState([]);
   const [inbox, setInbox] = useState(false);
   const [tweets, setTweets] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+
   const { ethersApi } = useConnectToWalletContext();
 
-  const CONTRACT_ADDRESS = "0x3E2d6b8696449bD548395dc93e1A6d0ED18Bf738";
+  const CONTRACT_ADDRESS = "0xbcd1e518d3B084Ad1ebb7936b7ceDf92d529ABdf";
   const CONTRACT_ABI = TwitterAbi;
   const provider = new ethers.BrowserProvider(window.ethereum);
 
@@ -48,13 +50,25 @@ export const Page = ({
     }
 
     const fetchLatestTweets = async () => {
-      const count = 1;
-      const latestTweets = await twitterContract.getlatestTweets(Number(count));
-      setTweets(latestTweets);
+      const nextTweetId = await twitterContract.getNextTweetId();
+      try {
+        if (nextTweetId > 0) {
+          const count = nextTweetId;
+
+          const latestTweets = await twitterContract.getlatestTweets(count);
+          setTweets(latestTweets);
+          setRefresh(true);
+        } else {
+          console.log("No tweets id has found!");
+          return;
+        }
+      } catch (error) {
+        console.error("Error fetching latest tweets:", error);
+      }
     };
 
     fetchLatestTweets();
-  }, [ethersApi.contract]);
+  }, [ethersApi.contract, refresh]);
 
   useEffect(() => {
     const storedTimestamp = localStorage.getItem("approvalTimestamp");
@@ -63,9 +77,14 @@ export const Page = ({
     } else {
       setIsApproved(false);
     }
-  }, [isApprovalValid, setIsApproved]);
+  }, []);
 
   const handleApproval = () => {
+    if (!ethersApi.address) {
+      alert("Please connect your wallet first!");
+      return;
+    }
+
     const currentTimestamp = new Date().getTime();
     localStorage.setItem("approvalTimestamp", currentTimestamp);
     setIsApproved(true);
@@ -74,7 +93,7 @@ export const Page = ({
 
   return (
     <>
-      <div className="flex flex-row items-center">
+      <div className="flex flex-row items-center shadow-2xl shadow-slate-900">
         <h1 className="text-5xl font-bold text-[#F29F58] px-10 py-10">Post</h1>
         {!isApproved ? (
           <h1
@@ -90,11 +109,11 @@ export const Page = ({
         )}
       </div>
 
-      <div className="Post w-full flex">
+      <div className="Post w-full flex flex-col overflow-y-scroll max-h-screen custom-scrollbar border-t-4 p-10">
         {tweets.map((tweet) => (
           <div
             key={tweet.id}
-            className="Post-Container flex flex-col mx-auto w-5/12 bg-[#0a0818] text-white p-8 pb-5 rounded-lg mt-14"
+            className="Post-Container flex flex-col mx-auto w-4/12 bg-[#0a0818] text-white p-8 pb-5 rounded-lg mt-14"
           >
             <div className="flex flex-row items-center gap-2">
               <div className="Profile w-14">

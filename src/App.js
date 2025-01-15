@@ -54,7 +54,8 @@ function App() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      const message = `Authorize app to interact with your wallet. Address: ${ethersApi.address}`;
+      const message = `Authorize interaction with the Twitter project. Address: ${ethersApi.address}`;
+
       const signature = await signer.signMessage(message);
 
       setEthersApi((prevState) => ({
@@ -62,9 +63,10 @@ function App() {
         signMessage: signature,
         isSigned: true,
       }));
-      console.log("Signed: ", signature);
+
+      console.log("Message signed:", signature);
     } catch (error) {
-      console.error("Failed to sign: ", error);
+      console.error("Failed to sign message: ", error);
     }
   };
 
@@ -88,7 +90,7 @@ function App() {
           signMessage={signMessage}
           isApproved={isApproved}
           setIsApproved={setIsApproved}
-          isApprovalValid={isApprovalValid} // Pass the function as a prop
+          isApprovalValid={isApprovalValid}
         />
       </header>
     </div>

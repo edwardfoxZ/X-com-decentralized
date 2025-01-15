@@ -80,9 +80,8 @@ contract Twitter {
         require(count > 0 && count <= nextTweetId, "Invalid tweet count");
 
         Tweet[] memory _tweets = new Tweet[](count);
-        for (uint i = 0; i < count; i++) {
-            uint tweetIndex = nextTweetId - count + i;
-            Tweet storage _tweeted = tweets[tweetIndex];
+        for (uint i = nextTweetId - count; i < count; i++) {
+            Tweet storage _tweeted = tweets[i];
             _tweets[i] = Tweet(
                 _tweeted.id,
                 _tweeted.content,
@@ -102,9 +101,8 @@ contract Twitter {
         require(count > 0 && count <= tweetIds.length, "Invalid tweet count");
 
         Tweet[] memory _tweets = new Tweet[](count);
-        for (uint i = 0; i < count; i++) {
-            uint tweetIndex = tweetIds.length - count + i;
-            Tweet storage _tweeted = tweets[tweetIds[tweetIndex]];
+        for (uint i = tweetIds.length - count; i < count; i++) {
+            Tweet storage _tweeted = tweets[tweetIds[i]];
             _tweets[i] = Tweet(
                 _tweeted.id,
                 _tweeted.content,

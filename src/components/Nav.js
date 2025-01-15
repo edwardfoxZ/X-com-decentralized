@@ -11,7 +11,7 @@ export const Nav = ({ addressOf }) => {
       ref={navRef}
       className={`relative flex flex-col w-5/12 h-full bg-[#441752] p-5 border-r-2 ${
         activeNav
-          ? "-translate-x-[100%] transition-all ease-in-out duration-700 w-1/12"
+          ? "-translate-x-[100%] transition-all ease-in-out duration-700 w-11"
           : "transition-all ease-in-out duration-700"
       } overflow-hidden`}
     >
@@ -30,7 +30,7 @@ export const Nav = ({ addressOf }) => {
         <a
           className={`${
             !activeNav
-              ? "translate-x-3 transition-all duration-500 delay-700 ease-out"
+              ? "translate-x-3 transition-all duration-500 delay-700 ease-out hover:text-[#ff315b] hover:delay-0"
               : ""
           }`}
           href="/"
@@ -40,12 +40,32 @@ export const Nav = ({ addressOf }) => {
         <a
           className={`${
             !activeNav
-              ? "translate-x-3 transition-all duration-500 delay-700 ease-out"
+              ? "translate-x-3 transition-all duration-500 delay-700 ease-out hover:text-[#ff315b] hover:delay-0"
               : ""
           }`}
           href="/notifications"
         >
           Notifications
+        </a>
+        <a
+          className={`${
+            !activeNav
+              ? "translate-x-3 transition-all duration-500 delay-700 ease-out hover:text-[#ff315b] hover:delay-0"
+              : ""
+          }`}
+          href="/notifications"
+        >
+          Tweets
+        </a>
+        <a
+          className={`${
+            !activeNav
+              ? "translate-x-3 transition-all duration-500 delay-700 ease-out hover:text-[#ff315b] hover:delay-0"
+              : ""
+          }`}
+          href="/notifications"
+        >
+          Follwing
         </a>
       </div>
       <div
