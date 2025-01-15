@@ -1,16 +1,17 @@
 import React, { useRef } from "react";
 import { useActiveNavContext } from "../context/ActiveNavContext";
 
-export const Nav = () => {
+export const Nav = ({ addressOf }) => {
   const { activeNav } = useActiveNavContext();
   const navRef = useRef(null);
+  const addressSlice = addressOf?.slice(0, 8) || "Unknown";
 
   return (
     <div
       ref={navRef}
       className={`relative flex flex-col w-5/12 h-full bg-[#441752] p-5 border-r-2 ${
         activeNav
-          ? "-translate-x-[100%] transition-all ease-in-out duration-700 w-0"
+          ? "-translate-x-[100%] transition-all ease-in-out duration-700 w-1/12"
           : "transition-all ease-in-out duration-700"
       } overflow-hidden`}
     >
@@ -62,7 +63,7 @@ export const Nav = () => {
             alt="Profile"
           />
         </div>
-        <p>0x0000</p>
+        <p>{addressSlice}...</p>
       </div>
     </div>
   );

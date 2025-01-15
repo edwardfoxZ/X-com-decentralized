@@ -1,15 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { LiaPenNibSolid } from "react-icons/lia";
 import { TweetInputs } from "./TweetInputs";
+import { useConnectToWalletContext } from "../context/ConnectToWalletContext";
+import TwitterAbi from "../abis/Twitter.json";
+import { ethers } from "ethers";
 
-export const Page = () => {
-  const [liked, setLiked] = useState(false);
+export const Page = ({
+  signMessage,
+  isApproved,
+  setIsApproved,
+  isApprovalValid,
+}) => {
+  const [likedTweets, setLikedTweets] = useState([]);
   const [inbox, setInbox] = useState(false);
+  const [tweets, setTweets] = useState([]);
+  const { ethersApi } = useConnectToWalletContext();
 
-  const toggleLiked = () => {
-    setLiked(!liked);
-    console.log("Liked: ", !liked);
+  const CONTRACT_ADDRESS = "0x3E2d6b8696449bD548395dc93e1A6d0ED18Bf738";
+  const CONTRACT_ABI = TwitterAbi;
+  const provider = new ethers.BrowserProvider(window.ethereum);
+
+  const twitterContract = new ethers.Contract(
+    CONTRACT_ADDRESS,
+    CONTRACT_ABI.abi,
+    provider
+  );
+
+  const toggleLiked = (tweetId) => {
+    setLikedTweets((prevLikedTweets) =>
+      prevLikedTweets.includes(tweetId)
+        ? prevLikedTweets.filter((id) => id !== tweetId)
+        : [...prevLikedTweets, tweetId]
+    );
+    console.log("Liked: ", tweetId);
   };
 
   const toggleInbox = () => {
@@ -17,38 +41,90 @@ export const Page = () => {
     console.log("Inbox Open: ", !inbox);
   };
 
+  useEffect(() => {
+    if (!twitterContract) {
+      console.error("Contract is not available");
+      return;
+    }
+
+    const fetchLatestTweets = async () => {
+      const count = 1;
+      const latestTweets = await twitterContract.getlatestTweets(Number(count));
+      setTweets(latestTweets);
+    };
+
+    fetchLatestTweets();
+  }, [ethersApi.contract]);
+
+  useEffect(() => {
+    const storedTimestamp = localStorage.getItem("approvalTimestamp");
+    if (storedTimestamp && isApprovalValid(storedTimestamp)) {
+      setIsApproved(true);
+    } else {
+      setIsApproved(false);
+    }
+  }, [isApprovalValid, setIsApproved]);
+
+  const handleApproval = () => {
+    const currentTimestamp = new Date().getTime();
+    localStorage.setItem("approvalTimestamp", currentTimestamp);
+    setIsApproved(true);
+    signMessage();
+  };
+
   return (
     <>
-      <h1 className="text-5xl font-bold text-[#F29F58] px-10 py-10">Post</h1>
-      <div className="Post w-full flex">
-        <div className="Post-Container flex flex-col mx-auto w-5/12 bg-[#0a0818] text-white p-8 pb-5 rounded-lg mt-14">
-          <div className="flex flex-row items-center gap-2">
-            <div className="Profile w-14">
-              <img
-                draggable={false}
-                className="w-full h-full rounded-full"
-                src="https://static.vecteezy.com/system/resources/previews/026/619/142/original/default-avatar-profile-icon-of-social-media-user-photo-image-vector.jpg"
-                alt="Profile"
-              />
-            </div>
-            <p className="text-2xl font-mono">0x000000</p>
-            <button className="mt-1 bg-blue-500 rounded-md px-3 hover:bg-hover-follow">
-              Follow
-            </button>
-          </div>
-          <p className="mt-5 px-5 text-xl font-semibold">
-            I got rugged buying 3 tokens this week I didn’t get on X and call
-            anyone a farmer I didn’t bitch or complain I made a choice to
-            gamble, I lost money. It happens. Bitching and crying will NOT bring
-            the Solana back. 🤒
-          </p>
-          <span
-            onClick={toggleLiked}
-            className="w-1 mt-5 px-5 text-3xl cursor-pointer"
+      <div className="flex flex-row items-center">
+        <h1 className="text-5xl font-bold text-[#F29F58] px-10 py-10">Post</h1>
+        {!isApproved ? (
+          <h1
+            onClick={handleApproval}
+            className="font-bold text-white ml-auto px-4 py-2 mr-8 cursor-pointer rounded-lg bg-[#0a0818] hover:bg-[#5243af] transition-all duration-300 ease-linear"
           >
-            {liked ? <FaHeart color="red" /> : <FaRegHeart color="red" />}
-          </span>
-        </div>
+            Approve
+          </h1>
+        ) : (
+          <h1 className="font-bold text-white ml-auto px-4 py-2 mr-8 rounded-lg bg-green-500">
+            Approved
+          </h1>
+        )}
+      </div>
+
+      <div className="Post w-full flex">
+        {tweets.map((tweet) => (
+          <div
+            key={tweet.id}
+            className="Post-Container flex flex-col mx-auto w-5/12 bg-[#0a0818] text-white p-8 pb-5 rounded-lg mt-14"
+          >
+            <div className="flex flex-row items-center gap-2">
+              <div className="Profile w-14">
+                <img
+                  draggable={false}
+                  className="w-full h-full rounded-full"
+                  src="https://static.vecteezy.com/system/resources/previews/026/619/142/original/default-avatar-profile-icon-of-social-media-user-photo-image-vector.jpg"
+                  alt="Profile"
+                />
+              </div>
+              <p className="text-2xl font-mono">
+                {tweet.author?.slice(0, 8) || "Unknown"}...
+              </p>
+              <button className="mt-1 bg-blue-500 rounded-md px-3 hover:bg-hover-follow">
+                Follow
+              </button>
+            </div>
+            <p className="mt-5 px-5 text-xl font-semibold">{tweet.content}</p>
+            <span
+              onClick={() => toggleLiked(tweet.id)}
+              className="w-1 mt-5 px-5 text-3xl cursor-pointer"
+            >
+              {likedTweets.includes(tweet.id) ? (
+                <FaHeart color="red" />
+              ) : (
+                <FaRegHeart color="red" />
+              )}
+            </span>
+          </div>
+        ))}
       </div>
 
       <div className="Create-Tweet absolute bottom-32 right-32 text-[#F29F58]">

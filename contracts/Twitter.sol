@@ -116,6 +116,10 @@ contract Twitter {
         return _tweets;
     }
 
+    function getNextTweetId() external view returns (uint) {
+        return nextTweetId;
+    }
+
     function _tweet(
         address _from,
         string memory _content
