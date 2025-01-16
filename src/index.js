@@ -4,13 +4,16 @@ import "./index.css";
 import App from "./App";
 import { ActiveNavProvider } from "./context/ActiveNavContext";
 import { ConnectToWalletProvider } from "./context/ConnectToWalletContext";
+import { BrowserRouter } from "react-router-dom";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <ActiveNavProvider>
       <ConnectToWalletProvider>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </ConnectToWalletProvider>
     </ActiveNavProvider>
   </React.StrictMode>

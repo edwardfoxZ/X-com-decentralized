@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { useActiveNavContext } from "../context/ActiveNavContext";
+import { Link } from "react-router-dom";
 
 export const Nav = ({ addressOf }) => {
   const { activeNav } = useActiveNavContext();
@@ -11,7 +12,7 @@ export const Nav = ({ addressOf }) => {
       ref={navRef}
       className={`relative flex flex-col w-5/12 h-full bg-[#441752] p-5 border-r-2 ${
         activeNav
-          ? "-translate-x-[100%] transition-all ease-in-out duration-700 w-11"
+          ? "-translate-x-[100%] transition-all ease-in-out duration-700 w-0"
           : "transition-all ease-in-out duration-700"
       } overflow-hidden`}
     >
@@ -47,16 +48,26 @@ export const Nav = ({ addressOf }) => {
         >
           Notifications
         </a>
-        <a
+        <Link
           className={`${
             !activeNav
               ? "translate-x-3 transition-all duration-500 delay-700 ease-out hover:text-[#ff315b] hover:delay-0"
               : ""
           }`}
-          href="/notifications"
+          to="/tweets"
         >
           Tweets
-        </a>
+        </Link>
+        <Link
+          className={`${
+            !activeNav
+              ? "translate-x-3 transition-all duration-500 delay-700 ease-out hover:text-[#ff315b] hover:delay-0"
+              : ""
+          }`}
+          to="/following"
+        >
+          Follwing
+        </Link>
         <a
           className={`${
             !activeNav
@@ -65,7 +76,7 @@ export const Nav = ({ addressOf }) => {
           }`}
           href="/notifications"
         >
-          Follwing
+          Messages
         </a>
       </div>
       <div

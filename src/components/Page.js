@@ -1,66 +1,37 @@
 import React, { useState, useEffect } from "react";
-import { FaRegHeart, FaHeart } from "react-icons/fa";
-import { LiaPenNibSolid } from "react-icons/lia";
+import { FaHeart } from "react-icons/fa";
 import { TweetInputs } from "./TweetInputs";
-import { useConnectToWalletContext } from "../context/ConnectToWalletContext";
-import TwitterAbi from "../abis/Twitter.json";
-import { ethers } from "ethers";
+import { LiaPenNibSolid } from "react-icons/lia";
+import { getContract } from "../utils/contract";
 
-export const Page = ({
-  signMessage,
-  isApproved,
-  setIsApproved,
-  isApprovalValid,
-}) => {
-  const [likedTweets, setLikedTweets] = useState([]);
-  const [inbox, setInbox] = useState(false);
+export const Page = () => {
   const [tweets, setTweets] = useState([]);
-  const [refresh, setRefresh] = useState(false);
-
-  const { ethersApi } = useConnectToWalletContext();
-
-  const CONTRACT_ADDRESS = "0xbcd1e518d3B084Ad1ebb7936b7ceDf92d529ABdf";
-  const CONTRACT_ABI = TwitterAbi;
-  const provider = new ethers.BrowserProvider(window.ethereum);
-
-  const twitterContract = new ethers.Contract(
-    CONTRACT_ADDRESS,
-    CONTRACT_ABI.abi,
-    provider
-  );
-
-  const toggleLiked = (tweetId) => {
-    setLikedTweets((prevLikedTweets) =>
-      prevLikedTweets.includes(tweetId)
-        ? prevLikedTweets.filter((id) => id !== tweetId)
-        : [...prevLikedTweets, tweetId]
-    );
-    console.log("Liked: ", tweetId);
-  };
-
-  const toggleInbox = () => {
-    setInbox(!inbox);
-    console.log("Inbox Open: ", !inbox);
-  };
+  const [contractRead, setContractRead] = useState(null);
+  const [contractWrite, setContractWrite] = useState(null);
 
   useEffect(() => {
-    if (!twitterContract) {
+    const { contractRead, contractWrite } = getContract();
+    if (contractRead && contractWrite) {
+      setContractRead(contractRead);
+      setContractWrite(contractWrite);
+    } else {
       console.error("Contract is not available");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!contractRead) {
       return;
     }
 
     const fetchLatestTweets = async () => {
-      const nextTweetId = await twitterContract.getNextTweetId();
       try {
+        const nextTweetId = await contractRead.getNextTweetId(); // Use contractRead for fetching data
         if (nextTweetId > 0) {
-          const count = nextTweetId;
-
-          const latestTweets = await twitterContract.getlatestTweets(count);
+          const latestTweets = await contractRead.getlatestTweets(nextTweetId); // Read tweets
           setTweets(latestTweets);
-          setRefresh(true);
         } else {
-          console.log("No tweets id has found!");
-          return;
+          console.log("No tweets found!");
         }
       } catch (error) {
         console.error("Error fetching latest tweets:", error);
@@ -68,45 +39,30 @@ export const Page = ({
     };
 
     fetchLatestTweets();
-  }, [ethersApi.contract, refresh]);
+  }, [contractRead]); // Trigger when contractRead is available
 
-  useEffect(() => {
-    const storedTimestamp = localStorage.getItem("approvalTimestamp");
-    if (storedTimestamp && isApprovalValid(storedTimestamp)) {
-      setIsApproved(true);
-    } else {
-      setIsApproved(false);
-    }
-  }, []);
-
-  const handleApproval = () => {
-    if (!ethersApi.address) {
-      alert("Please connect your wallet first!");
+  const follow = async (authorAddress) => {
+    if (!contractWrite) {
+      console.error("Contract is not available for writing");
       return;
     }
 
-    const currentTimestamp = new Date().getTime();
-    localStorage.setItem("approvalTimestamp", currentTimestamp);
-    setIsApproved(true);
-    signMessage();
+    try {
+      const tx = await contractWrite.follow(authorAddress); // Use contractWrite for state-changing actions
+      await tx.wait(); // Wait for transaction confirmation
+      console.log(`Successfully followed ${authorAddress}`);
+    } catch (error) {
+      console.error("Cannot follow: ", error);
+    }
   };
 
   return (
     <>
-      <div className="flex flex-row items-center shadow-2xl shadow-slate-900">
+      <div className="flex flex-row items-center shadow-2xl shadow-slate-900 w-full">
         <h1 className="text-5xl font-bold text-[#F29F58] px-10 py-10">Post</h1>
-        {!isApproved ? (
-          <h1
-            onClick={handleApproval}
-            className="font-bold text-white ml-auto px-4 py-2 mr-8 cursor-pointer rounded-lg bg-[#0a0818] hover:bg-[#5243af] transition-all duration-300 ease-linear"
-          >
-            Approve
-          </h1>
-        ) : (
-          <h1 className="font-bold text-white ml-auto px-4 py-2 mr-8 rounded-lg bg-green-500">
-            Approved
-          </h1>
-        )}
+        <h1 className="font-bold text-white ml-auto px-4 py-2 mr-8 cursor-pointer rounded-lg bg-[#0a0818] hover:bg-[#5243af] transition-all duration-300 ease-linear">
+          Approve
+        </h1>
       </div>
 
       <div className="Post w-full flex flex-col overflow-y-scroll max-h-screen custom-scrollbar border-t-4 p-10">
@@ -127,35 +83,28 @@ export const Page = ({
               <p className="text-2xl font-mono">
                 {tweet.author?.slice(0, 8) || "Unknown"}...
               </p>
-              <button className="mt-1 bg-blue-500 rounded-md px-3 hover:bg-hover-follow">
+              <button
+                className="mt-1 bg-blue-500 rounded-md px-3 hover:bg-hover-follow"
+                onClick={() => follow(tweet.author)}
+              >
                 Follow
               </button>
             </div>
             <p className="mt-5 px-5 text-xl font-semibold">{tweet.content}</p>
-            <span
-              onClick={() => toggleLiked(tweet.id)}
-              className="w-1 mt-5 px-5 text-3xl cursor-pointer"
-            >
-              {likedTweets.includes(tweet.id) ? (
-                <FaHeart color="red" />
-              ) : (
-                <FaRegHeart color="red" />
-              )}
+            <span className="w-1 mt-5 px-5 text-3xl cursor-pointer">
+              <FaHeart color="red" />
             </span>
           </div>
         ))}
       </div>
 
       <div className="Create-Tweet absolute bottom-32 right-32 text-[#F29F58]">
-        <button
-          onClick={toggleInbox}
-          className="text-5xl bg-[#441752] hover:bg-[#912faf] p-3 rounded-full transition-all duration-300 ease-in-out"
-        >
+        <button className="text-5xl bg-[#441752] hover:bg-[#912faf] p-3 rounded-full transition-all duration-300 ease-in-out">
           <LiaPenNibSolid />
         </button>
       </div>
 
-      {inbox && <TweetInputs />}
+      <TweetInputs />
     </>
   );
 };
